@@ -57,7 +57,11 @@ def math_func(operator, operands):
     </body>
     </html>"""
 
-    answer = math_ops[operator](operands[0], operands[1])
+    try:
+        answer = math_ops[operator](operands[0], operands[1])
+    except:
+        raise ValueError
+
     return answer_page.format(answer)
 
     
@@ -81,6 +85,11 @@ def application(environ, start_response):
     except NameError:
         status = "404 Not Found"
         body = "<h1>Not Found</h1>"
+        body += usage()
+
+    except ValueError:
+        status = "400 Bad Request"
+        body = "<h1>Bad Request</h1>"
         body += usage()
 
     except Exception:
