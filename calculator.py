@@ -33,16 +33,6 @@ def usage():
     return usage_page
 
 
-def resolve_path(path):
-    """ Resolve the path into an operator and its operands """
-
-    parts = path.strip('/').split('/')
-    if len(parts) != 3:
-        raise NameError
-
-    return parts[0], [int(i) for i in parts[1:]]
-
-
 def math_func(operator, operands):
     """ Perform math operation specified by 'operator' on 'operands' """
     
@@ -58,13 +48,29 @@ def math_func(operator, operands):
     </html>"""
 
     try:
-        answer = math_ops[operator](operands[0], operands[1])
+        answer = math_ops[operator.lower()](operands[0], operands[1])
     except:
         raise ValueError
 
     return answer_page.format(answer)
 
     
+def resolve_path(path):
+    """ Resolve the path and return body """
+
+    parts = path.strip('/').split('/')
+    if not parts[0]:
+        return usage()
+
+    elif len(parts) == 3:
+        return math_func(parts[0], [int(i) for i in parts[1:]])
+
+    else:
+        raise NameError
+
+    
+
+
 def application(environ, start_response):
     """ A WSGI application for doing basic math via the url """
 
@@ -75,11 +81,7 @@ def application(environ, start_response):
 
     try:
         path = environ.get('PATH_INFO', None)
-        if path is None:
-            raise NameError
-
-        operator, operands = resolve_path(path)
-        body = math_func(operator, operands)
+        body = resolve_path(path)
         status = "200 OK"
 
     except NameError:
